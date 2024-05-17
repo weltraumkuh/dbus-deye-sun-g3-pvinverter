@@ -3,7 +3,7 @@ Integrate Deye Sun G3 Inverter into Victron Energies Venus OS
 
 ## Purpose
 With the scripts in this repo it should be easy possible to install, uninstall, restart a service that connects the Deye Sun G3 Inverter to the VenusOS and GX devices from Victron.
-This repo is based on the great work of @vikt0rm and others.
+This repo is based on the great work of @vikt0rm,@s10l and others.
 Altered to work with new Deye Firmware only communicating via AT commands.
 
 ## Motivation
