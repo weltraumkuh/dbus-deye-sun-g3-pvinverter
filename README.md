@@ -7,8 +7,8 @@ This repo is based on the great work of @vikt0rm and others.
 Altered to work with new Deye Firmware only communicating via AT commands.
 
 ## Motivation
-This repository is a modification of https://github.com/vikt0rm/dbus-shelly-1pm-pvinverter. 
-My part in this is only the query of the data from the Deye inverter via modbus.
+I updated the  repository from https://github.com/s10l/dbus-deye-sun-g3-pvinverter and added a class to read out the values via AT command and modbus via AT commads.
+The class for AT commands is inspired by https://github.com/jedie/inverter-connect/tree/main/inverter.
 
 Why I don't use a Shelly: The Deye has the data in, for me, sufficient quality. You have to know, the inverter delivers data only every 5 minutes. If you need real-time data, then use the Shelly.
 
@@ -18,6 +18,7 @@ Special thanks to:
 - @vikt0rm https://github.com/vikt0rm/dbus-shelly-1pm-pvinverter
 - @schwatter https://github.com/schwatter/solarman_mqtt/blob/main/solarman_mqtt.py#L72C7-L93C13
 - @kbialek https://github.com/kbialek/deye-inverter-mqtt/blob/bd3f4b749c80b9ca9f257cff88c6b878861e8650/deye_set_time_processor.py
+- @jedie https://github.com/jedie/inverter-connect/tree/main/inverter
 
 And all the other deye hackers out there!
 
@@ -74,8 +75,6 @@ Within the project there is a file `/data/dbus-deye-sun-g3-pvinverter/config.ini
 | ------------- | ------------- | ------------- |
 | DEFAULT  | Address | IP or hostname of Deye Sun G3 Inverter |
 | DEFAULT  | Port | The port on which SolarmanV5 is running |
-| DEFAULT  | Serial | The serial number of the logger integrated in the inverter |
-| DEFAULT  | FirmwareVersion | The firmware version which is reported, the firmware version is currently not read out, purely cosmetic |
 | DEFAULT  | Phase | Valid values L1, L2 or L3: represents the phase where pv inverter is feeding in |
 | DEFAULT  | SignOfLifeLog  | Time in minutes how often a status is added to the log-file `current.log` with log-level INFO |
 | DEFAULT  | Deviceinstance | Unique ID identifying the Deye Sun G3 in Venus OS |
