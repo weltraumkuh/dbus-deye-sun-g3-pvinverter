@@ -20,13 +20,13 @@ class DeyeAtComm:
 
 
 
-    def deye_at_command(self,register_addr : int ,count : int, function :int,values: None | list[int, ...] = None) :
+    def deye_at_command(self,register_addr : int ,count : int, function :int,values = None) :
         req_data = bytearray([1, function])
         req_data.extend(register_addr.to_bytes(2,'big'))
         req_data.extend(count.to_bytes(2,'big'))
         if values:
             v_len=len(values)
-            rq_data.extend(v_len.to_bytes(2,'big'))
+            req_data.extend(v_len.to_bytes(2,'big'))
             for v in values:
                 req_data.extend(v.to_bytes(2,'big'))
         crc = self.modbus_crc(req_data)
@@ -78,7 +78,7 @@ class DeyeAtComm:
         response=self.parse_at_response(rx_payload)
         return response
 
-    def write(self, register_addr:int, count : int, values : list[int]) :
+    def write(self, register_addr:int, count : int, values ) :
         payload=self.deye_at_command(register_addr,count,0x10,values)
     #    payload_str = payload.decode('ASCII')
         # print(f'Send Payload: "{payload=}"')

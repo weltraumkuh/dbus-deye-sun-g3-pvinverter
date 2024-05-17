@@ -156,7 +156,7 @@ class DbusDeyeSunG3Service:
 
         if oldValues[0] != newValues[0] or oldValues[1]/256 != newValues[1]/256:
             logging.info('updating inverters system time')
-            modbus.write(register_addr=0x0016, values=newValues)
+            modbus.write(register_addr=0x0016, count=3,values=newValues)
 
             until = time.time() + 5 * 60
             while time.time() <= until:
