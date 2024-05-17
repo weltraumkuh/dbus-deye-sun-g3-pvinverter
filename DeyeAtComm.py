@@ -72,11 +72,21 @@ class DeyeAtComm:
     def read(self, register_addr :int ,count :int) :
         payload=self.deye_at_command(register_addr,count,0x03)
     #    payload_str = payload.decode('ASCII')
-        print(f'Send Payload: "{payload=}"')
+        # print(f'Send Payload: "{payload=}"')
         self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
         rx_payload=self.sock.recv(1024)
         response=self.parse_at_response(rx_payload)
         return response
+
+    def write(self, register_addr:int, count : int, values : list[int]) :
+        payload=self.deye_at_command(register_addr,count,0x10,values)
+    #    payload_str = payload.decode('ASCII')
+        # print(f'Send Payload: "{payload=}"')
+        self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
+        rx_payload=self.sock.recv(1024)
+        response=self.parse_at_response(rx_payload)
+        return response
+
 
 
     def hello(self) :
@@ -111,7 +121,7 @@ class DeyeAtComm:
 
     def __del__(self) :
         try:
-            print('Disconnect with AT+Q')
+            # print('Disconnect with AT+Q')
             self.bye()
         finally:
             return

@@ -4,6 +4,7 @@ Integrate Deye Sun G3 Inverter into Victron Energies Venus OS
 ## Purpose
 With the scripts in this repo it should be easy possible to install, uninstall, restart a service that connects the Deye Sun G3 Inverter to the VenusOS and GX devices from Victron.
 This repo is based on the great work of @vikt0rm and others.
+Altered to work with new Deye Firmware only communicating via AT commands.
 
 ## Motivation
 This repository is a modification of https://github.com/vikt0rm/dbus-shelly-1pm-pvinverter. 
@@ -13,6 +14,7 @@ Why I don't use a Shelly: The Deye has the data in, for me, sufficient quality. 
 
 
 Special thanks to:
+- @s10l https://github.com/s10l/dbus-deye-sun-g3-pvinverter
 - @vikt0rm https://github.com/vikt0rm/dbus-shelly-1pm-pvinverter
 - @schwatter https://github.com/schwatter/solarman_mqtt/blob/main/solarman_mqtt.py#L72C7-L93C13
 - @kbialek https://github.com/kbialek/deye-inverter-mqtt/blob/bd3f4b749c80b9ca9f257cff88c6b878861e8650/deye_set_time_processor.py

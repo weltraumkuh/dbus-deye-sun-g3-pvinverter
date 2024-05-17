@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# swap files
+*.swp
+
 # C extensions
 *.so
 
@@ -145,3 +148,15 @@ pysolarmanv5-3.0.0.dist-info/
 *.log
 
 .vscode/
+
+# local vedbus copy
+dbusdummyservice.py
+dbusmonitor.py
+logger.py
+mosquitto_bridge_registrator.py
+settingsdevice.py
+streamcommand.py
+tracing.py
+ve_utils.py
+vedbus.py
+

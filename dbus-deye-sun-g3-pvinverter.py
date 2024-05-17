@@ -15,7 +15,6 @@ import time
 import configparser  # for config/ini file
 from functools import reduce
 
-from pysolarmanv5 import PySolarmanV5
 from datetime import datetime
 
 # our own packages from victron
@@ -23,11 +22,14 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__),
                 '/opt/victronenergy/dbus-systemcalc-py/ext/velib_python'))
 from vedbus import VeDbusService
 
+from DeyeAtComm import DeyeAtComm
+
 class DbusDeyeSunG3Service:
     def __init__(self, servicename, paths, productname='Deye Sun G3', connection='SolarmanV5 Modbus RTU'):
         config = self._getConfig()
         deviceinstance = int(config['DEFAULT']['Deviceinstance'])
         customname = config['DEFAULT']['CustomName']
+        self.serial =''
 
         self._dbusservice = VeDbusService(
             "{}.tcp_{:02d}".format(servicename, deviceinstance))
@@ -81,9 +83,9 @@ class DbusDeyeSunG3Service:
                             * 60*1000, self._signOfLife)
 
     def _getDeyeSerial(self):
-        config = self._getConfig()
-        serial = config['DEFAULT']['Serial']
-        return serial
+        #config = self._getConfig()
+        #serial = config['DEFAULT']['Serial']
+        return self.serial
 
     def _getDeyeFWVersion(self):
         return self._getFirmwareVersion(None)
@@ -114,13 +116,15 @@ class DbusDeyeSunG3Service:
     def _getDeyeData(self):
         config = self._getConfig()
         address = config['DEFAULT']['Address']
-        serial = int(config['DEFAULT']['Serial'])
+#       serial = int(config['DEFAULT']['Serial'])
         port = int(config['DEFAULT']['Port'])
 
-        modbus = PySolarmanV5(
-            address=address, serial=serial, port=port, mb_slave_id=1, verbose=False, auto_reconnect=True
-        )
-        
+#        modbus = PySolarmanV5(
+#            address=address, serial=serial, port=port, mb_slave_id=1, verbose=False, auto_reconnect=True
+#        )
+        modbus = DeyeAtComm(address,port)
+        self.serial = modbus.serial
+
         try:
             self._checkResetDailyProduction(modbus)
             
@@ -132,7 +136,7 @@ class DbusDeyeSunG3Service:
         except Exception as e:
             logging.critical('Error at %s', '_update', exc_info=e)
 
-        modbus.disconnect()
+        #modbus.disconnect()
 
         return {
             "acEnergyForward": acEnergyForward,
@@ -143,7 +147,8 @@ class DbusDeyeSunG3Service:
         }
     
     def _checkResetDailyProduction(self, modbus):
-        oldValues = modbus.read_holding_registers(register_addr=0x0016, quantity=3)
+        #oldValues = modbus.read_holding_registers(register_addr=0x0016, quantity=3)
+        oldValues = modbus.read(register_addr=0x0016, count=3)
         newValues = self._calcSystemTime()
 
         logging.debug('inverters system time: %s' %oldValues)
@@ -151,7 +156,7 @@ class DbusDeyeSunG3Service:
 
         if oldValues[0] != newValues[0] or oldValues[1]/256 != newValues[1]/256:
             logging.info('updating inverters system time')
-            modbus.write_multiple_holding_registers(register_addr=0x0016, values=newValues)
+            modbus.write(register_addr=0x0016, values=newValues)
 
             until = time.time() + 5 * 60
             while time.time() <= until:
@@ -185,7 +190,9 @@ class DbusDeyeSunG3Service:
         #   rule: 1
         #   registers: [0x003C]
         #   icon: 'mdi:solar-power'
-        return modbus.read_holding_register_formatted(register_addr=0x003C, quantity=1, scale=0.1)
+        #return modbus.read_holding_register_formatted(register_addr=0x003C, quantity=1, scale=0.1)
+        result = modbus.read(0x3c,1)
+        return result[0]*0.1
 
     def _getAcVoltage(self, modbus):
         #  - name: "AC Voltage"
@@ -196,7 +203,10 @@ class DbusDeyeSunG3Service:
         #   rule: 1
         #   registers: [0x0049]
         #   icon: 'mdi:transmission-tower'
-        return modbus.read_holding_register_formatted(register_addr=0x0049, quantity=1, scale=0.1)
+        #return modbus.read_holding_register_formatted(register_addr=0x0049, quantity=1, scale=0.1)
+        result = modbus.read(0x49,1)
+        return result[0]*0.1
+
 
     def _getGridCurrent(self, modbus):
         # - name: "Grid Current"
@@ -207,7 +217,9 @@ class DbusDeyeSunG3Service:
         #   rule: 2
         #   registers: [0x004C]
         #   icon: 'mdi:home-lightning-bolt'
-        return modbus.read_holding_register_formatted(register_addr=0x004C, quantity=1, scale=0.1)
+        #return modbus.read_holding_register_formatted(register_addr=0x004C, quantity=1, scale=0.1)
+        result = modbus.read(0x4C,1)
+        return result[0]*0.1
 
     def _getTotalACOutputPower(self, modbus):
         #  - name: "Total AC Output Power (Active)"
@@ -218,8 +230,10 @@ class DbusDeyeSunG3Service:
         #   rule: 3
         #   registers: [0x0056, 0x0057]
         #   icon: 'mdi:home-lightning-bolt'
-        values = modbus.read_holding_registers(
-            register_addr=0x0056, quantity=2)
+        #values = modbus.read_holding_registers(
+        #    register_addr=0x0056, quantity=2)
+        values = modbus.read(
+            register_addr=0x0056, count=2)
         byteValues = list(map(lambda v: v.to_bytes(2, 'big'), values))
         byteValues.reverse()
         bytes = reduce(lambda a, b: a + b, byteValues)
@@ -229,9 +243,13 @@ class DbusDeyeSunG3Service:
 
     def _getFirmwareVersion(self, modbus):
         # TODO get fw from modbus
-        config = self._getConfig()
-        firmwareVersion = config['DEFAULT']['FirmwareVersion']
-        return firmwareVersion
+        #config = self._getConfig()
+        #firmwareVersion = config['DEFAULT']['FirmwareVersion']
+        if modbus:
+            firmwareVersion = modbus.getversion()
+            return firmwareVersion
+        else :
+            return '?'
 
     def _signOfLife(self):
         logging.info("--- Start: sign of life ---")
