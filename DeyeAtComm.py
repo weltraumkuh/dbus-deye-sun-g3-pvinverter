@@ -49,7 +49,7 @@ class DeyeAtComm:
         crc_rx = payload_bin[-2:]
         assert crc_rx == crc_rx, f'CRC error rx:{crc_rx=} not {crc_check}'
         rx_len = payload_bin[2]
-        assert rx_len+5 == len(payload_bin), f'Payload length is not {rx_len=}: {payload_bin=}'
+        assert rx_len==0 or rx_len+5 == len(payload_bin), f'Payload length is not {rx_len=}: {payload_bin=}'
     #    return  ModbusResponse( 
     #                            slave_id=payload_bin[0],
     #                            modbus_function=payload_bin[1],
@@ -71,19 +71,19 @@ class DeyeAtComm:
 
     def read(self, register_addr :int ,count :int) :
         payload=self.deye_at_command(register_addr,count,0x03)
-    #    payload_str = payload.decode('ASCII')
-        # print(f'Send Payload: "{payload=}"')
+    #    print(f'Read Send Payload: "{payload}"')
         self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
         rx_payload=self.sock.recv(1024)
+    #    print(f'Read Recv Payload: "{rx_payload}"')
         response=self.parse_at_response(rx_payload)
         return response
 
     def write(self, register_addr:int, count : int, values ) :
         payload=self.deye_at_command(register_addr,count,0x10,values)
-    #    payload_str = payload.decode('ASCII')
-        # print(f'Send Payload: "{payload=}"')
+    #    print(f'Write Send Payload: "{payload}"')
         self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
         rx_payload=self.sock.recv(1024)
+    #    print(f'Write Recv  Payload: "{rx_payload}"')
         response=self.parse_at_response(rx_payload)
         return response
 

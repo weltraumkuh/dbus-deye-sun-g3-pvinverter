@@ -144,6 +144,7 @@ class DbusDeyeSunG3Service:
             "acCurrent": acCurrent,
             "acVoltage": acVoltage,
             "_firmwareVersion": firmwareVersion,
+            "_serial":self.serial
         }
     
     def _checkResetDailyProduction(self, modbus):
@@ -242,9 +243,6 @@ class DbusDeyeSunG3Service:
         return value
 
     def _getFirmwareVersion(self, modbus):
-        # TODO get fw from modbus
-        #config = self._getConfig()
-        #firmwareVersion = config['DEFAULT']['FirmwareVersion']
         if modbus:
             firmwareVersion = modbus.getversion()
             return firmwareVersion
@@ -288,6 +286,9 @@ class DbusDeyeSunG3Service:
             self._dbusservice['/Ac/Current'] = self._dbusservice['/Ac/' + pvinverter_phase + '/Current']
             self._dbusservice['/Ac/Power'] = self._dbusservice['/Ac/' + pvinverter_phase + '/Power']
             self._dbusservice['/Ac/Energy/Forward'] = self._dbusservice['/Ac/' + pvinverter_phase + '/Energy/Forward']
+            self._dbusservice['/FirmwareVersion'] =  deye_data['_firmwareVersion']
+            self._dbusservice['/Serial'] =  deye_data['_serial']
+
             self._dbusservice['/Connected'] = 1
             
             # logging

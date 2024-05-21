@@ -2,7 +2,8 @@
 import logging
 import configparser
 import os
-from pysolarmanv5 import PySolarmanV5
+from DeyeAtComm import DeyeAtComm
+
 from functools import reduce
 
 
@@ -25,35 +26,29 @@ def main():
 def _getDeyeData():
     config = _getConfig()
     address = config['DEFAULT']['Address']
-    serial = int(config['DEFAULT']['Serial'])
     port = int(config['DEFAULT']['Port'])
 
-    logging.info("config...")
-    logging.info(address)
-    logging.info(port)
-    logging.info(serial)
+    modbus = DeyeAtComm(address,port)
+    serial = modbus.serial
 
-    modbus = PySolarmanV5(
-        address=address, serial=serial, port=port, mb_slave_id=1, verbose=True
-    )
-
-    acEnergyForward = _getDailyProduction(modbus)
-    acPower = _getTotalACOutputPower(modbus)
-    acCurrent = _getGridCurrent(modbus)
-    acVoltage = _getAcVoltage(modbus)
-    firmwareVersion = _getFirmwareVersion(modbus)
-
-    modbus.disconnect()
-
-    return {
-        "acEnergyForward": acEnergyForward,
-        "acPower": acPower,
-        "acCurrent": acCurrent,
-        "acVoltage": acVoltage,
-        "_firmwareVersion": firmwareVersion,
-    }
-
-
+    try:
+        #_checkResetDailyProduction(modbus)
+        
+        acEnergyForward = _getDailyProduction(modbus)
+        acPower = _getTotalACOutputPower(modbus)
+        acCurrent = _getGridCurrent(modbus)
+        acVoltage = _getAcVoltage(modbus)
+        firmwareVersion = _getFirmwareVersion(modbus)
+        return {
+            "acEnergyForward": acEnergyForward,
+            "acPower": acPower,
+            "acCurrent": acCurrent,
+            "acVoltage": acVoltage,
+            "_firmwareVersion": firmwareVersion,
+        }
+    except Exception as e:
+        logging.critical('Error at %s', '_update', exc_info=e)
+ 
 def _getDailyProduction(modbus):
     # - name: "Daily Production"
     #   class: "energy"
@@ -63,7 +58,8 @@ def _getDailyProduction(modbus):
     #   rule: 1
     #   registers: [0x003C]
     #   icon: 'mdi:solar-power'
-    return modbus.read_holding_register_formatted(register_addr=0x003C, quantity=1, scale=0.1)
+    result = modbus.read(0x3c,1)
+    return result[0]*0.1
 
 
 def _getAcVoltage(modbus):
@@ -75,7 +71,8 @@ def _getAcVoltage(modbus):
     #   rule: 1
     #   registers: [0x0049]
     #   icon: 'mdi:transmission-tower'
-    return modbus.read_holding_register_formatted(register_addr=0x0049, quantity=1, scale=0.1)
+    result = modbus.read(0x49,1)
+    return result[0]*0.1
 
 
 def _getGridCurrent(modbus):
@@ -87,7 +84,8 @@ def _getGridCurrent(modbus):
     #   rule: 2
     #   registers: [0x004C]
     #   icon: 'mdi:home-lightning-bolt'
-    return modbus.read_holding_register_formatted(register_addr=0x004C, quantity=1, scale=0.1)
+    result = modbus.read(0x4C,1)
+    return result[0]*0.1
 
 
 def _getTotalACOutputPower(modbus):
@@ -99,7 +97,8 @@ def _getTotalACOutputPower(modbus):
     #   rule: 3
     #   registers: [0x0056, 0x0057]
     #   icon: 'mdi:home-lightning-bolt'
-    values = modbus.read_holding_registers(register_addr=0x0056, quantity=2)
+    values = modbus.read(
+        register_addr=0x0056, count=2)
     byteValues = list(map(lambda v: v.to_bytes(2, 'big'), values))
     byteValues.reverse()
     bytes = reduce(lambda a, b: a + b, byteValues)
@@ -107,13 +106,12 @@ def _getTotalACOutputPower(modbus):
     value = float(intValue) * 0.1
     return value
 
-
 def _getFirmwareVersion(modbus):
-    # TODO get fw from modbus
-    config = _getConfig()
-    firmwareVersion = config['DEFAULT']['FirmwareVersion']
-    return firmwareVersion
-
+    if modbus:
+        firmwareVersion = modbus.getversion()
+        return firmwareVersion
+    else :
+        return '?'
 
 def _getConfig():
     config = configparser.ConfigParser()
