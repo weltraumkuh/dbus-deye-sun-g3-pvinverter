@@ -81,6 +81,7 @@ Within the project there is a file `/data/dbus-deye-sun-g3-pvinverter/config.ini
 | DEFAULT  | CustomName | Name shown in Remote Console (e.g. name of pv inverter) |
 | DEFAULT  | Position | Valid values 0, 1 or 2: represents where the inverter is connected (0=AC input 1; 1=AC output; 2=AC input 2) |
 | DEFAULT  | UpdateInterval | The interval how often the data is read from the inverter in seconds. The inverter itself accumulates the values every 5 minutes. |
+| DEFAULT  | ResetDailyProduction | Should the Daily Production be reset by the script  (0=no; 1=yes / necessary if not connected to cloud |
 
 ### Testing configuration
 If you encounter any issue please test your settings in config.ini with:

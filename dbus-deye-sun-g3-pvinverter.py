@@ -124,29 +124,33 @@ class DbusDeyeSunG3Service:
 #        )
         modbus = DeyeAtComm(address,port)
         self.serial = modbus.serial
-
+        successfullread = False
         try:
-            self._checkResetDailyProduction(modbus)
+            if int(config['DEFAULT']['ResetDailyProduction']) :
+                self._checkResetDailyProduction(modbus)
             
             acEnergyForward = self._getDailyProduction(modbus)
             acPower = self._getTotalACOutputPower(modbus)
             acCurrent = self._getGridCurrent(modbus)
             acVoltage = self._getAcVoltage(modbus)
             firmwareVersion = self._getFirmwareVersion(modbus)
+            successfullread = True
         except Exception as e:
             logging.critical('Error at %s', '_update', exc_info=e)
 
         #modbus.disconnect()
-
-        return {
-            "acEnergyForward": acEnergyForward,
-            "acPower": acPower,
-            "acCurrent": acCurrent,
-            "acVoltage": acVoltage,
-            "_firmwareVersion": firmwareVersion,
-            "_serial":self.serial
-        }
-    
+        if successfullread :
+             return {
+                "acEnergyForward": acEnergyForward,
+                "acPower": acPower,
+                "acCurrent": acCurrent,
+                "acVoltage": acVoltage,
+                "_firmwareVersion": firmwareVersion,
+                "_serial":self.serial
+            }
+        else:
+             raise Exception("Could not update data")
+        
     def _checkResetDailyProduction(self, modbus):
         #oldValues = modbus.read_holding_registers(register_addr=0x0016, quantity=3)
         oldValues = modbus.read(register_addr=0x0016, count=3)
