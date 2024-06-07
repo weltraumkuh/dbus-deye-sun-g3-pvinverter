@@ -1,7 +1,7 @@
 """ A basic class fro Communication with Deye Inverters via AT commands """
 
 import socket
-
+import logging
 
 class DeyeAtComm:
     Logger_Init_CMD=b'WIFIKIT-214028-READ'
@@ -72,27 +72,32 @@ class DeyeAtComm:
     def read(self, register_addr :int ,count :int) :
         payload=self.deye_at_command(register_addr,count,0x03)
     #    print(f'Read Send Payload: "{payload}"')
+        logging.debug(f'Read Send Payload: "{payload}"')
         self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
         rx_payload=self.sock.recv(1024)
-    #    print(f'Read Recv Payload: "{rx_payload}"')
+        logging.debug(f'Read Recv Payload: "{rx_payload}"')
         response=self.parse_at_response(rx_payload)
         return response
 
     def write(self, register_addr:int, count : int, values ) :
         payload=self.deye_at_command(register_addr,count,0x10,values)
     #    print(f'Write Send Payload: "{payload}"')
+        logging.debug(f'Write Send Payload: "{payload}"')
         self.sock.sendto(payload,(self.Logger_IP,self.Logger_Port))
         rx_payload=self.sock.recv(1024)
-    #    print(f'Write Recv  Payload: "{rx_payload}"')
+        logging.debug(f'Write Recv  Payload: "{rx_payload}"')
         response=self.parse_at_response(rx_payload)
         return response
 
 
 
     def hello(self) :
+        logging.debug(f'Hello Send Payload: "{self.Logger_Init_CMD,}"')
         self.sock.sendto(self.Logger_Init_CMD,(self.Logger_IP,self.Logger_Port))
         data=self.sock.recv(1024)
+        logging.debug(f'Helo Recv  Payload: "{data}"')
         self.sock.sendto(b'+ok',(self.Logger_IP,self.Logger_Port))
+        logging.debug(f'Hello Send +ok"')
         return data.decode().split(',')
 
     def bye(self) :
@@ -122,6 +127,7 @@ class DeyeAtComm:
     def __del__(self) :
         try:
             # print('Disconnect with AT+Q')
+            logging.debug('Disconnect with AT+Q')
             self.bye()
         finally:
             return

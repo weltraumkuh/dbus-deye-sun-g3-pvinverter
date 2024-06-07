@@ -77,6 +77,7 @@ Within the project there is a file `/data/dbus-deye-sun-g3-pvinverter/config.ini
 | DEFAULT  | Port | The port on which SolarmanV5 is running |
 | DEFAULT  | Phase | Valid values L1, L2 or L3: represents the phase where pv inverter is feeding in |
 | DEFAULT  | SignOfLifeLog  | Time in minutes how often a status is added to the log-file `current.log` with log-level INFO |
+| DEFAULT  | LogLevel | Set log-level, default is INFO, for more verbose set to DEBUG |
 | DEFAULT  | Deviceinstance | Unique ID identifying the Deye Sun G3 in Venus OS |
 | DEFAULT  | CustomName | Name shown in Remote Console (e.g. name of pv inverter) |
 | DEFAULT  | Position | Valid values 0, 1 or 2: represents where the inverter is connected (0=AC input 1; 1=AC output; 2=AC input 2) |

@@ -25,7 +25,7 @@ from vedbus import VeDbusService
 from DeyeAtComm import DeyeAtComm
 
 class DbusDeyeSunG3Service:
-    def __init__(self, servicename, paths, productname='Deye Sun G3', connection='SolarmanV5 Modbus RTU'):
+    def __init__(self, servicename, paths, productname='Deye Sun G3', connection='Deye AT Commands Modbus RTU'):
         config = self._getConfig()
         deviceinstance = int(config['DEFAULT']['Deviceinstance'])
         customname = config['DEFAULT']['CustomName']
@@ -296,8 +296,8 @@ class DbusDeyeSunG3Service:
             self._dbusservice['/Connected'] = 1
             
             # logging
-            logging.debug("House Consumption (/Ac/Power): %s" %(self._dbusservice['/Ac/Power']))
-            logging.debug("House Forward (/Ac/Energy/Forward): %s" %(self._dbusservice['/Ac/Energy/Forward']))
+            logging.debug("Inverter Production (/Ac/Power): %s" %(self._dbusservice['/Ac/Power']))
+            logging.debug("Inverter Forward (/Ac/Energy/Forward): %s" %(self._dbusservice['/Ac/Energy/Forward']))
             logging.debug("---")
 
             # update lastupdate vars
@@ -329,10 +329,19 @@ class DbusDeyeSunG3Service:
 
 
 def main():
+    #get loglevel from config
+    config = DbusDeyeSunG3Service._getConfig(None)
+    loglevel = config['DEFAULT']['LogLevel']
+    numeric_level = getattr(logging, loglevel.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % loglevel)
+
+
     # configure logging
     logging.basicConfig(format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
-                        level=logging.INFO,
+    #                    level=logging.INFO,
+                        level=numeric_level,
                         handlers=[
                             logging.FileHandler(
                                 "%s/current.log" % (os.path.dirname(os.path.realpath(__file__)))),
