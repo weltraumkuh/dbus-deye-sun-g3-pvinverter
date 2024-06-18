@@ -31,6 +31,8 @@ class DbusDeyeSunG3Service:
         customname = config['DEFAULT']['CustomName']
         self.serial =''
 
+        self.lastDaily = 0
+
         self._dbusservice = VeDbusService(
             "{}.tcp_{:02d}".format(servicename, deviceinstance))
         self._paths = paths
@@ -197,7 +199,14 @@ class DbusDeyeSunG3Service:
         #   icon: 'mdi:solar-power'
         #return modbus.read_holding_register_formatted(register_addr=0x003C, quantity=1, scale=0.1)
         result = modbus.read(0x3c,1)
-        return result[0]*0.1
+        value =  result[0]*0.1
+        #check for jumps and deliver old value:
+        if value > self.lastDaily + 0.3 :
+            rvalue=self.lastDaily
+        else:
+            rvalue=value
+        self.lastDaily = value  
+        return rvalue 
 
     def _getAcVoltage(self, modbus):
         #  - name: "AC Voltage"
@@ -295,22 +304,25 @@ class DbusDeyeSunG3Service:
 
             self._dbusservice['/Connected'] = 1
             
-            # logging
-            logging.debug("Inverter Production (/Ac/Power): %s" %(self._dbusservice['/Ac/Power']))
-            logging.debug("Inverter Forward (/Ac/Energy/Forward): %s" %(self._dbusservice['/Ac/Energy/Forward']))
-            logging.debug("---")
-
             # update lastupdate vars
             self._lastUpdate = time.time()
+
         except Exception as e:
             logging.critical('Error at %s', '_update', exc_info=e)
-
             try:
                 if self._lastUpdate < (time.time() - 5 * 60):
                     self._dbusservice['/Connected'] = 0
             except Exception as e:
                 logging.critical('Error at %s', '_update', exc_info=e)
- 
+        try:
+            # logging
+            logging.debug("Inverter Production (/Ac/Power): %s" %(self._dbusservice['/Ac/Power']))
+            logging.debug("Inverter Forward (/Ac/Energy/Forward): %s" %(self._dbusservice['/Ac/Energy/Forward']))
+            logging.debug("---")
+        except Exception as e:
+            logging.critical('Error at %s', '_update', exc_info=e)
+
+
         try:
             # increment UpdateIndex - to show that new data is available
             index = self._dbusservice['/UpdateIndex'] + 1  # increment index
