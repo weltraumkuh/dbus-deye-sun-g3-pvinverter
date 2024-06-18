@@ -198,14 +198,13 @@ class DbusDeyeSunG3Service:
         #   registers: [0x003C]
         #   icon: 'mdi:solar-power'
         #return modbus.read_holding_register_formatted(register_addr=0x003C, quantity=1, scale=0.1)
-        result = modbus.read(0x3c,1)
-        value =  result[0]*0.1
-        #check for jumps and deliver old value:
-        if value > self.lastDaily + 0.3 :
-            rvalue=self.lastDaily
+        result1 = modbus.read(0x3c,1)
+        result2 = modbus.read(0x3c,1)
+        if result1 == result2:
+            value =  result[0]*0.1
+            self.lastDaily = value  
         else:
-            rvalue=value
-        self.lastDaily = value  
+            value=self.lastDaily
         return rvalue 
 
     def _getAcVoltage(self, modbus):
