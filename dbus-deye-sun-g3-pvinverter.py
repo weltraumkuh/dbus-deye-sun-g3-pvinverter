@@ -204,6 +204,7 @@ class DbusDeyeSunG3Service:
             value =  result[0]*0.1
             self.lastDaily = value  
         else:
+            logging.info("Inconsistent reading of daily production %i != %i" % (result1 , result2))
             value=self.lastDaily
         return rvalue 
 
