@@ -206,7 +206,7 @@ class DbusDeyeSunG3Service:
         else:
             logging.info("Inconsistent reading of daily production %i != %i" % (result1 , result2))
             value=self.lastDaily
-        return rvalue 
+        return value 
 
     def _getAcVoltage(self, modbus):
         #  - name: "AC Voltage"
