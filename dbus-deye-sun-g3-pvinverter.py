@@ -201,7 +201,7 @@ class DbusDeyeSunG3Service:
         result1 = modbus.read(0x3c,1)
         result2 = modbus.read(0x3c,1)
         if result1 == result2:
-            value =  result[0]*0.1
+            value =  result1[0]*0.1
             self.lastDaily = value  
         else:
             logging.info("Inconsistent reading of daily production %i != %i" % (result1 , result2))
